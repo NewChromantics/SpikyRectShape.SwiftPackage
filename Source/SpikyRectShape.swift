@@ -171,14 +171,28 @@ extension Collection where Element == CGLine
 }
 	
 
-struct SpikyRectShape : Shape
+public struct SpikyRectShape : Shape
 {
-	var cornerRadius : CGFloat = 30
-	var step : CGFloat	{	spikeWidth	}
-	var spikeHeight = CGFloat(20)
-	var spikeWidth = CGFloat(30)
+	var spikeHeight : CGFloat
+	var spikeWidth : CGFloat
 	
-	func path(in rect: CGRect) -> Path 
+	public init(spikeHeight: CGFloat, spikeWidth: CGFloat)
+	{
+		self.spikeHeight = spikeHeight
+		self.spikeWidth = spikeWidth
+	}
+	
+	public func path(in rect: CGRect) -> Path 
+	{
+		guard let cgPath = GetCGPath(in: rect) else
+		{
+			return Path()
+		}
+		return Path(cgPath)
+	}
+	
+	
+	public func GetCGPath(in rect: CGRect) -> CGPath?
 	{
 		//	clamp the spike height
 		let minContentHeight = CGFloat(3)	//	this should be 2* strokeWidth
@@ -186,7 +200,7 @@ struct SpikyRectShape : Shape
 		let spikeHeight = min( spikeHeight, maxSpikeHeight )
 		
 		let innerRect = rect.insetBy(dx: spikeHeight, dy: spikeHeight)
-	
+		
 		let edges = innerRect.edges
 		let permiterLength = edges.length
 		
@@ -196,10 +210,10 @@ struct SpikyRectShape : Shape
 		let spikeBases = try? edges.splitByLength(length: spikeWidth)
 		guard let spikeBases, let firstSpike = spikeBases.first else
 		{
-			return Path()
+			return nil
 		}
-
-		var path = Path()
+		
+		var path = CGMutablePath()
 		
 		path.move(to: firstSpike.start)
 		spikeBases.forEach
