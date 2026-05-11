@@ -217,56 +217,6 @@ struct SpikyRectShape : Shape
 	}
 }
 
-
-struct SteppedEdge : Shape
-{
-	var cornerRadius : CGFloat = 30
-	var step : CGFloat = 10
-	
-	func path(in rect: CGRect) -> Path 
-	{
-		//let corners : CGPoint = [(rect.minX,rect.minY),(rect.maxX,rect.minY)]
-		var path = Path()
-		
-		let edge = CGPath(roundedRect: rect, cornerWidth: cornerRadius, cornerHeight: cornerRadius, transform: nil)
-		
-		var edgePoints : [CGPoint] = []
-		let edgeDashed = edge.copy(dashingWithPhase: 0, lengths: [step,step] )
-		edgeDashed.applyWithBlock
-		{
-			elementPointer in
-			let element = elementPointer.pointee
-			let count: Int
-			
-			switch element.type {
-				case .moveToPoint, .addLineToPoint: count = 1
-				case .addQuadCurveToPoint:          count = 2
-				case .addCurveToPoint:              count = 3
-				default:                            count = 0
-			}
-			let points = (0..<count).map { element.points[$0] }
-			print("point count = \(points.count)")
-			//edgePoints.append(contentsOf: points)
-			edgePoints.append( points.first! )
-			edgePoints.append( points.last! )
-		}
-
-		let debugRadius = CGFloat(0.5)
-		edgePoints.forEach
-		{
-			let circleRect = CGRect(x: $0.x, y: $0.y, width: 1, height: 1).insetBy(dx: -debugRadius, dy: -debugRadius)
-			let circle = CGPath(ellipseIn: circleRect, transform: nil)
-			path.addPath(Path(circle))
-		}
-		
-		//CGPath(roundedRect: <#T##CGRect#>, cornerWidth: <#T##CGFloat#>, cornerHeight: <#T##CGFloat#>, transform: <#T##UnsafePointer<CGAffineTransform>?#>)
-		//path.move(to: corners[0])
-		//path.addPath(Path(edgeDashed))
-		
-		return path
-	}
-}
-
 struct ContentView: View 
 {
 	@State var spikeWidth = CGFloat(30)
